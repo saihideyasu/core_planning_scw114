@@ -1,0 +1,26 @@
+<!-- -->
+<launch>
+	<node pkg="lookahead_ratio_magn" type="lookahead_ratio_magn" name="lookahead_ratio_magn" output="log">
+	</node>
+
+	<node pkg="lookahead_ratio_magn" type="lookahead_ratio_magn" name="lookahead_ratio_magn_ndt" output="log">
+		<remap from="/difference_to_waypoint_distance" to="/difference_to_waypoint_distance_ndt" />
+		<remap from="/lookahead_ratio_magn" to="/lookahead_ratio_magn_ndt" />
+		<remap from="/current_pose" to="/ndt_pose" />
+		<remap from="/current_velocity" to="/ndt_estimate_twist" />
+	</node>
+
+	<node pkg="lookahead_ratio_magn" type="lookahead_ratio_magn" name="lookahead_ratio_magn_ekf" output="log">
+		<remap from="/difference_to_waypoint_distance" to="/difference_to_waypoint_distance_ekf" />
+		<remap from="/lookahead_ratio_magn" to="/lookahead_ratio_magn_ndt" />
+		<remap from="/current_pose" to="/ekf_pose" />
+		<remap from="/current_velocity" to="/ekf_twist" />
+	</node>
+
+	<node pkg="lookahead_ratio_magn" type="lookahead_ratio_magn" name="lookahead_ratio_magn_gnss" output="log">
+		<remap from="/difference_to_waypoint_distance" to="/difference_to_waypoint_distance_gnss" />
+		<remap from="/lookahead_ratio_magn" to="/lookahead_ratio_magn_gnss" />
+		<remap from="/current_pose" to="/RTK_gnss_pose" />
+		<remap from="/current_velocity" to="/gnss_estimate_twist" />
+	</node>
+</launch>

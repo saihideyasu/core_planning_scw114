@@ -135,11 +135,13 @@ MPCFollower::MPCFollower()
   //pnh_.param("in_vehicle_status_name", in_vehicle_status, std::string("vehicle_status"));
   pub_twist_cmd_ = nh_.advertise<geometry_msgs::TwistStamped>(out_twist, 1);
   pub_steer_vel_ctrl_cmd_ = nh_.advertise<autoware_msgs::ControlCommandStamped>(out_vehicle_cmd, 1);
+  pub_mpc_assumes_angle_ = nh_.advertise<std_msgs::Float64>("/mpc_assumes_angle", 1);
+  pub_mpc_waypoint_param_ = nh_.advertise<std_msgs::String>("/mpc_waypoint_param", 1);
   sub_ref_path_ = nh_.subscribe(in_waypoints, 1, &MPCFollower::callbackRefPath, this);
   sub_pose_ = nh_.subscribe(in_selfpose, 1, &MPCFollower::callbackPose, this);
-  //sub_vehicle_status_ = nh_.subscribe(in_vehicle_status, 1, &MPCFollower::callbackVehicleStatus, this);
   sub_vehicle_status_ = nh_.subscribe("/vehicle_status", 1, &MPCFollower::callbackVehicleStatus, this);
   sub_vehicle_status_microbus_ = nh_.subscribe("/microbus/vehicle_status", 1, &MPCFollower::callbackVehicleStatus, this);
+  sub_waypoint_param_ = nh_.subscribe("/waypoint_param", 1, &MPCFollower::callbackWaypointParam, this);
 
   /* for debug */
   pub_debug_filtered_traj_ = pnh_.advertise<visualization_msgs::Marker>("debug/filtered_traj", 1);
@@ -148,7 +150,20 @@ MPCFollower::MPCFollower()
 
   pub_debug_values_ = pnh_.advertise<std_msgs::Float64MultiArray>("debug/debug_values", 1);
   sub_estimate_twist_ = nh_.subscribe("estimate_twist", 1, &MPCFollower::callbackEstimateTwist, this);
+
+  waypoint_mpc_param_.prediction_horizon = -1;
+  waypoint_param_path_filter_moving_ave_num_ = -1;
+  waypoint_param_curvature_smoothing_num_ = -1;
 };
+
+void MPCFollower::callbackWaypointParam(const autoware_msgs::WaypointParam &msg)
+{
+  if(msg.mpc_prediction_horizon > 0) waypoint_mpc_param_.prediction_horizon = msg.mpc_prediction_horizon;
+  if(msg.mpc_moving_average_number_of_times > 0) waypoint_param_path_filter_moving_ave_num_ = msg.mpc_moving_average_number_of_times;
+  if(msg.mpc_curvature_smoothing_number > 0) waypoint_param_curvature_smoothing_num_ = msg.mpc_curvature_smoothing_number;
+  if(msg.mpc_ctrl_period > 0) ctrl_period_ = msg.mpc_ctrl_period;
+  if(msg.mpc_wheelbase > 0) wheelbase_ = msg.mpc_wheelbase;
+}
 
 void MPCFollower::timerCallback(const ros::TimerEvent &te)
 {
@@ -200,7 +215,7 @@ void MPCFollower::timerCallback(const ros::TimerEvent &te)
 
 bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_cmd, double &steer_vel_cmd)
 {
-  const int N = mpc_param_.prediction_horizon;
+  const int N = (waypoint_mpc_param_.prediction_horizon < 0) ? mpc_param_.prediction_horizon : waypoint_mpc_param_.prediction_horizon;
   const double DT = mpc_param_.prediction_sampling_time;
   const int DIM_X = vehicle_model_ptr_->getDimX();
   const int DIM_U = vehicle_model_ptr_->getDimU();
@@ -531,6 +546,10 @@ bool MPCFollower::calculateMPC(double &vel_cmd, double &acc_cmd, double &steer_c
     debug_values.data.push_back(estimate_twist_.twist.linear.x);        // [15] current velocity
     debug_values.data.push_back(estimate_twist_.twist.angular.z);       // [16] estimate twist angular velocity (real angvel)
     pub_debug_values_.publish(debug_values);
+
+    std_msgs::Float64 assumes_angle;
+    assumes_angle.data = curr_v * tan(steer_cmd) / wheelbase_;
+    pub_mpc_assumes_angle_.publish(assumes_angle);
   }
 
   return true;
@@ -559,10 +578,11 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   {
     for (int i = 0; i < path_smoothing_times_; ++i)
     {
-      if (!MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.x) ||
-          !MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.y) ||
-          !MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.yaw) ||
-          !MoveAverageFilter::filt_vector(path_filter_moving_ave_num_, traj.vx))
+      int ave_num = (waypoint_param_path_filter_moving_ave_num_ < 0) ? path_filter_moving_ave_num_ : waypoint_param_path_filter_moving_ave_num_;
+      if (!MoveAverageFilter::filt_vector(ave_num, traj.x) ||
+          !MoveAverageFilter::filt_vector(ave_num, traj.y) ||
+          !MoveAverageFilter::filt_vector(ave_num, traj.yaw) ||
+          !MoveAverageFilter::filt_vector(ave_num, traj.vx))
       {
         ROS_WARN("[MPC] path callback: filtering error. stop filtering");
         return;
@@ -578,13 +598,15 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   }
 
   /* calculate curvature */
-  MPCUtils::calcTrajectoryCurvature(traj, curvature_smoothing_num_);
+  int csn = (waypoint_param_curvature_smoothing_num_ < 0) ? curvature_smoothing_num_ : waypoint_param_curvature_smoothing_num_;
+  MPCUtils::calcTrajectoryCurvature(traj, csn);
   const double max_k = *max_element(traj.k.begin(), traj.k.end());
   const double min_k = *min_element(traj.k.begin(), traj.k.end());
   DEBUG_INFO("[MPC] path callback: trajectory curvature : max_k = %f, min_k = %f", max_k, min_k);
 
   /* add end point with vel=0 on traj for mpc prediction */
-  const double mpc_predict_time_length = (mpc_param_.prediction_horizon + 1) * mpc_param_.prediction_sampling_time + mpc_param_.delay_compensation_time + ctrl_period_;
+  int prediction_horizon = (waypoint_mpc_param_.prediction_horizon < 0) ? mpc_param_.prediction_horizon : waypoint_mpc_param_.prediction_horizon;
+  const double mpc_predict_time_length = (prediction_horizon + 1) * mpc_param_.prediction_sampling_time + mpc_param_.delay_compensation_time + ctrl_period_;
   const double end_velocity = 0.0;
   traj.vx.back() = end_velocity; // also for end point
   traj.push_back(traj.x.back(), traj.y.back(), traj.z.back(), traj.yaw.back(),
@@ -604,6 +626,12 @@ void MPCFollower::callbackRefPath(const autoware_msgs::Lane::ConstPtr &msg)
   visualization_msgs::Marker markers;
   convertTrajToMarker(ref_traj_, markers, "ref_traj", 0.0, 0.5, 1.0, 0.05);
   pub_debug_filtered_traj_.publish(markers);
+
+  std::stringstream str;
+  str << prediction_horizon << "," << path_filter_moving_ave_num_ << "," << csn;
+  std_msgs::String pub;
+  pub.data = str.str();
+  pub_mpc_waypoint_param_.publish(pub);
 };
 
 void MPCFollower::convertTrajToMarker(const MPCTrajectory &traj, visualization_msgs::Marker &marker,

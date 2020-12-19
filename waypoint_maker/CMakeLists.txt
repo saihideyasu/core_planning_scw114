@@ -40,6 +40,14 @@ target_link_libraries(waypoint_loader ${catkin_LIBRARIES})
 add_dependencies(waypoint_loader ${catkin_EXPORTED_TARGETS})
 
 add_executable(
+  waypoint_loader_show_id
+  nodes/waypoint_loader/waypoint_loader_core_show_id.cpp
+  nodes/waypoint_loader/waypoint_loader_node.cpp
+)
+target_link_libraries(waypoint_loader_show_id ${catkin_LIBRARIES})
+add_dependencies(waypoint_loader_show_id ${catkin_EXPORTED_TARGETS})
+
+add_executable(
   waypoint_replanner
   nodes/waypoint_replanner/waypoint_replanner.cpp
   nodes/waypoint_replanner/waypoint_replanner_node.cpp
@@ -68,6 +76,13 @@ target_link_libraries(waypoint_marker_publisher ${catkin_LIBRARIES})
 add_dependencies(waypoint_marker_publisher ${catkin_EXPORTED_TARGETS})
 
 add_executable(
+  waypoint_marker_publisher_show_id
+  nodes/waypoint_marker_publisher/waypoint_marker_publisher_show_id.cpp
+)
+target_link_libraries(waypoint_marker_publisher_show_id ${catkin_LIBRARIES})
+add_dependencies(waypoint_marker_publisher_show_id ${catkin_EXPORTED_TARGETS})
+
+add_executable(
   waypoint_velocity_visualizer
   nodes/waypoint_velocity_visualizer/waypoint_velocity_visualizer.cpp
 )
@@ -85,16 +100,26 @@ add_executable(
 target_link_libraries(waypoint_creator ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(waypoint_creator ${catkin_EXPORTED_TARGETS})
 
+add_executable(
+  waypoint_param_sender
+  nodes/waypoint_param_sender/waypoint_param_sender.cpp
+)
+target_link_libraries(waypoint_param_sender ${catkin_LIBRARIES})
+add_dependencies(waypoint_param_sender ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     waypoint_loader
+    waypoint_loader_show_id
     waypoint_replanner
     waypoint_saver
     waypoint_clicker
     waypoint_marker_publisher
+    waypoint_marker_publisher_show_id
     waypoint_velocity_visualizer
     waypoint_extractor
     waypoint_creator
+    waypoint_param_sender
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

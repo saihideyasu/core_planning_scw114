@@ -30,9 +30,11 @@
 #include <deque>
 
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/String.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -78,10 +80,13 @@ private:
   ros::NodeHandle pnh_;                   //!< @brief private ros node handle
   ros::Publisher pub_steer_vel_ctrl_cmd_; //!< @brief topic publisher for control command
   ros::Publisher pub_twist_cmd_;          //!< @brief topic publisher for twist command
+  ros::Publisher pub_mpc_assumes_angle_;
+  ros::Publisher pub_mpc_waypoint_param_;
   ros::Subscriber sub_ref_path_;          //!< @brief topic subscriber for reference waypoints
   ros::Subscriber sub_pose_;              //!< @brief subscriber for current pose
   ros::Subscriber sub_vehicle_status_;    //!< @brief subscriber for currrent vehicle status
   ros::Subscriber sub_vehicle_status_microbus_;    //!< @brief subscriber for currrent vehicle status(microbus)
+  ros::Subscriber sub_waypoint_param_;
   ros::Timer timer_control_;              //!< @brief timer for control command computation
 
   MPCTrajectory ref_traj_;                                   //!< @brief reference trajectory to be followed
@@ -106,9 +111,9 @@ private:
   /* parameters for path smoothing */
   bool enable_path_smoothing_;     //< @brief flag for path smoothing
   bool enable_yaw_recalculation_;  //< @brief flag for recalculation of yaw angle after resampling
-  int path_filter_moving_ave_num_; //< @brief param of moving average filter for path smoothing
+  int path_filter_moving_ave_num_, waypoint_param_path_filter_moving_ave_num_; //< @brief param of moving average filter for path smoothing
   int path_smoothing_times_;       //< @brief number of times of applying path smoothing filter
-  int curvature_smoothing_num_;    //< @brief point-to-point index distance used in curvature calculation
+  int curvature_smoothing_num_, waypoint_param_curvature_smoothing_num_;    //< @brief point-to-point index distance used in curvature calculation
   double traj_resample_dist_;      //< @brief path resampling interval [m]
 
   struct MPCParam
@@ -126,7 +131,7 @@ private:
     double zero_ff_steer_deg;                       //< @brief threshold that feed-forward angle becomes zero
     double delay_compensation_time;                //< @brief delay time for steering input to be compensated
   };
-  MPCParam mpc_param_; // for mpc design parameter
+  MPCParam mpc_param_, waypoint_mpc_param_; // for mpc design parameter
 
   struct VehicleStatus
   {
@@ -145,6 +150,8 @@ private:
   bool my_position_ok_; //< @brief flag for validity of current pose
   bool my_velocity_ok_; //< @brief flag for validity of current velocity
   bool my_steering_ok_; //< @brief flag for validity of steering angle
+
+  void callbackWaypointParam(const autoware_msgs::WaypointParam &);
 
   /**
    * @brief compute and publish control command for path follow with a constant control period
