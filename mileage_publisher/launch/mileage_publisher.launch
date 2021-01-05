@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="mileage_publisher" type="mileage_publisher" name="mileage_publisher" output="log">
+	</node>
+</launch>
