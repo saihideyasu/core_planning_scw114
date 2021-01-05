@@ -93,7 +93,7 @@ namespace waypoint_maker
 		wp->waypoint_param.mpc_curvature_smoothing_number = ((map.find("mpc_curvature_smoothing_number") != map.end()) ? std::stoi(map["mpc_curvature_smoothing_number"]) : -1);
 		wp->waypoint_param.mpc_ctrl_period = ((map.find("mpc_ctrl_period") != map.end()) ? std::stod(map["mpc_ctrl_period"]) : -1);
 		wp->waypoint_param.mpc_wheelbase = ((map.find("mpc_wheelbase") != map.end()) ? std::stod(map["mpc_wheelbase"]) : -1);
-		wp->waypoint_param.steer_overwrite = ((map.find("steer_overwrite") != map.end()) ? std::stod(map["steer_overwrite"]) : -100000);
+		wp->waypoint_param.steer_override = ((map.find("steer_override") != map.end()) ? std::stod(map["steer_override"]) : -100000);
 		wp->waypoint_param.mpc_target_input = ((map.find("mpc_target_input") != map.end()) ? std::stoi(map["mpc_target_input"]) : 0);
 	}
 
