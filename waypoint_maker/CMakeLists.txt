@@ -20,6 +20,8 @@ find_package(
     vector_map
 )
 
+include_directories("/usr/include/eigen3")
+
 find_package(Boost REQUIRED)
 
 catkin_package()
@@ -107,6 +109,13 @@ add_executable(
 target_link_libraries(waypoint_param_sender ${catkin_LIBRARIES})
 add_dependencies(waypoint_param_sender ${catkin_EXPORTED_TARGETS})
 
+add_executable(
+  waypoint_file_move
+  nodes/waypoint_file_move/waypoint_file_move.cpp
+)
+target_link_libraries(waypoint_file_move ${catkin_LIBRARIES})
+add_dependencies(waypoint_file_move ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     waypoint_loader
@@ -120,6 +129,7 @@ install(
     waypoint_extractor
     waypoint_creator
     waypoint_param_sender
+    waypoint_file_move
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

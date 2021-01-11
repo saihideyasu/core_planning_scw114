@@ -84,6 +84,8 @@ struct WayCurrentDistance
 class MileagePublisher
 {
 private:
+	const double CUR_BASE_DISTANCE_TH = 3.0;//current_poseとbase_waypointsの先頭がこの距離(m)離れていた場合、処理をしない
+
 	ros::NodeHandle nh_, p_nh_;
 
 	ros::Publisher pub_distance_, pub_way_increase_distance_, pub_way_current_distance_all_;
@@ -248,6 +250,9 @@ private:
 	{
 		//global_waypointsのサイズが2以下、もしくはodometryの速度が0の場合は処理しない
 		if(base_waypoints_.waypoints.size() < 2 || odometry_.twist.twist.linear.x == 0)
+			return;
+		//current_poseとbase_waypointsの先頭がこの距離(m)離れていた場合、処理をしない
+		if(euclidDistance(msg.pose.position, base_waypoints_.waypoints[0].pose.pose.position) > CUR_BASE_DISTANCE_TH)
 			return;
 
 		//current_poseに一番近いwaypointの探索

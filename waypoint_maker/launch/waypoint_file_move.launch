@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+    <arg name="input_file_name" default="/home/autoware/load_data/okabe/tyokusen_kensyo/go.csv" />
+    <arg name="output_file_name" default="/tmp/move.csv" />
+
+    <node pkg="waypoint_maker" type="waypoint_file_move" name="waypoint_file_move" output="screen">
+        <param name="input_file_name" value="$(arg input_file_name)" />
+        <param name="output_file_name" value="$(arg output_file_name)" />
+    </node>
+</launch>
