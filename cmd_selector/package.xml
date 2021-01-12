@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cmd_selector</name>
+  <version>1.12.0</version>
+  <description>The cmd_selector package</description>
+  <maintainer email="sai.hideyasu@sit.ac.jp">h_ohta</maintainer>
+  <license>Apache 2</license>
+
+  <buildtool_depend>autoware_build_flags</buildtool_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>autoware_msgs</depend>
+  <depend>autoware_config_msgs</depend>
+  <depend>geometry_msgs</depend>
+</package>

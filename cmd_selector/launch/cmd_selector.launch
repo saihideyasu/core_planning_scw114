@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- For twist_filter -->
+  <arg name="twist_raw1" default="/twist_raw_mpc" />
+  <arg name="ctrl_raw1" default="/ctrl_raw_mpc" />
+  <arg name="twist_raw2" default="/twist_raw_pure" />
+  <arg name="ctrl_raw2" default="/ctrl_raw_pure" />
+
+  <node pkg="cmd_selector" type="cmd_selector" name="cmd_selector" output="screen">
+    <param name="twist_raw1" value="$(arg twist_raw1)" />
+    <param name="ctrl_raw1" value="$(arg ctrl_raw1)" />
+    <param name="twist_raw2" value="$(arg twist_raw2)" />
+    <param name="ctrl_raw2" value="$(arg ctrl_raw2)" />
+  </node>
+</launch>
