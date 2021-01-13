@@ -76,8 +76,8 @@ void PurePursuitNode::initForROS()
     &PurePursuitNode::callbackFromCurrentVelocity, this);
 
   // setup publisher
-  pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw", 10);
-  pub2_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("ctrl_raw", 10);
+  pub1_ = nh_.advertise<geometry_msgs::TwistStamped>("twist_raw_pure", 10);
+  pub2_ = nh_.advertise<autoware_msgs::ControlCommandStamped>("ctrl_raw_pure", 10);
   pub11_ = nh_.advertise<visualization_msgs::Marker>("next_waypoint_mark", 0);
   pub12_ = nh_.advertise<visualization_msgs::Marker>("next_target_mark", 0);
   pub13_ = nh_.advertise<visualization_msgs::Marker>("search_circle_mark", 0);
