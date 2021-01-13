@@ -95,6 +95,7 @@ namespace waypoint_maker
 		wp->waypoint_param.mpc_wheelbase = ((map.find("mpc_wheelbase") != map.end()) ? std::stod(map["mpc_wheelbase"]) : -1);
 		wp->waypoint_param.steer_override = ((map.find("steer_override") != map.end()) ? std::stod(map["steer_override"]) : -100000);
 		wp->waypoint_param.mpc_target_input = ((map.find("mpc_target_input") != map.end()) ? std::stoi(map["mpc_target_input"]) : 0);
+		wp->waypoint_param.cmd_select = ((map.find("cmd_select") != map.end()) ? std::stoi(map["cmd_select"]) : 0);
 	}
 
 	void waypoint_param_init(autoware_msgs::Waypoint *wp, const unsigned int id_counter)
