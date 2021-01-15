@@ -8,7 +8,7 @@
   <arg name="lowpass_gain_angular_z" default="0.0" />
   <arg name="lowpass_gain_steering_angle" default="0.0" />
 
-  <param name="vehicle_info/wheel_base" value="$(arg wheel_base)" />
+  <!-- param name="vehicle_info/wheel_base" value="$(arg wheel_base)" / -->
 
   <!-- For twist_gate -->
   <arg name="loop_rate" default="30.0" />
