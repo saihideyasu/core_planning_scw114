@@ -1,0 +1,10 @@
+<!-- -->
+<launch>
+    <arg name="input_file_name" default="/home/autoware/load_data/okabe/liesse_csv/2021_01_12/go_2021_01_12_add_cmd_select.csv" />
+    <arg name="output_file_name" default="/tmp/move.csv" />
+
+    <node pkg="waypoint_maker" type="straight_line_fix" name="straight_line_fix" output="screen">
+        <param name="input_file_name" value="$(arg input_file_name)" />
+        <param name="output_file_name" value="$(arg output_file_name)" />
+    </node>
+</launch>

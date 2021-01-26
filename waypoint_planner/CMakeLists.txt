@@ -11,6 +11,7 @@ find_package(
     autoware_config_msgs
     autoware_health_checker
     autoware_msgs
+    autoware_can_msgs
     lanelet2_extension
     libwaypoint_follower
     pcl_conversions
@@ -45,6 +46,41 @@ target_link_libraries(
 
 add_dependencies(
   astar_avoid
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_executable(
+  temporary_stopper
+  src/temporary_stopper/temporary_stopper.cpp
+)
+
+target_link_libraries(
+  temporary_stopper
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(
+  temporary_stopper
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_dependencies(
+  astar_avoid
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_executable(
+  stopper_distance
+  src/stopper_distance/stopper_distance.cpp
+)
+
+target_link_libraries(
+  stopper_distance
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(
+  stopper_distance
   ${catkin_EXPORTED_TARGETS}
 )
 
@@ -85,7 +121,7 @@ add_dependencies(
 )
 
 install(
-  TARGETS astar_avoid velocity_set velocity_set_lanelet2
+  TARGETS astar_avoid velocity_set velocity_set_lanelet2 temporary_stopper stopper_distance
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
