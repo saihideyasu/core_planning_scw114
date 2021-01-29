@@ -109,6 +109,24 @@ void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray& lane_wa
   int count = 0;
   for (auto lane : lane_waypoints_array.lanes)
   {
+    switch(count)
+    {
+    case 0:
+      velocity_marker.color.r = 1;
+      velocity_marker.color.g = 1;
+      velocity_marker.color.b = 1;
+      break;
+    case 1:
+      velocity_marker.color.r = 1;
+      velocity_marker.color.g = 0;
+      velocity_marker.color.b = 0;
+      break;
+    default:
+      velocity_marker.color.r = 1;
+      velocity_marker.color.g = 1;
+      velocity_marker.color.b = 1;
+    }
+
     velocity_marker.ns = "global_velocity_lane_" + std::to_string(count);
     for (int i = 0; i < static_cast<int>(lane.waypoints.size()); i++)
     {
@@ -272,6 +290,26 @@ void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray& lane
   int count = 1;
   for (auto lane : lane_waypoints_array.lanes)
   {
+    switch(count)
+    {
+    case 1:
+      lane_waypoint_marker.color.r = 1.0;
+      lane_waypoint_marker.color.g = 0.0;
+      lane_waypoint_marker.color.b = 0.0;
+      lane_waypoint_marker.color.a = 1.0;
+      break;
+    case 2:
+      lane_waypoint_marker.color.r = 0.0;
+      lane_waypoint_marker.color.g = 1.0;
+      lane_waypoint_marker.color.b = 0.0;
+      lane_waypoint_marker.color.a = 1.0;
+      break;
+    default:
+      lane_waypoint_marker.color.r = 1.0;
+      lane_waypoint_marker.color.g = 0.0;
+      lane_waypoint_marker.color.b = 0.0;
+      lane_waypoint_marker.color.a = 1.0;
+    }
     lane_waypoint_marker.ns = "global_lane_waypoint_orientation_marker_" + std::to_string(count);
 
     for (int i = 0; i < static_cast<int>(lane.waypoints.size()); i++)

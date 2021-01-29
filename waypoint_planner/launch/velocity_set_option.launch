@@ -62,6 +62,7 @@
     <param name="velocity_change_limit" value="$(arg velocity_change_limit)" />
     <param name="deceleration_range" value="$(arg deceleration_range)" />
     <param name="temporal_waypoints_size" value="$(arg temporal_waypoints_size)" />
+    <remap from="safety_waypoints" to="temporary_stop_waypoints"/>
   </node>
 </group>
 

@@ -26,7 +26,7 @@ find_package(Boost REQUIRED)
 
 catkin_package()
 
-SET(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-O2 -g -Wall -fpermissive ${CMAKE_CXX_FLAGS}")
 
 include_directories(
   include
@@ -61,6 +61,10 @@ add_dependencies(waypoint_replanner ${catkin_EXPORTED_TARGETS})
 add_executable(waypoint_saver nodes/waypoint_saver/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver ${catkin_EXPORTED_TARGETS})
+
+add_executable(waypoint_saver_scw nodes/waypoint_saver/waypoint_saver_scw.cpp)
+target_link_libraries(waypoint_saver_scw ${catkin_LIBRARIES})
+add_dependencies(waypoint_saver_scw ${catkin_EXPORTED_TARGETS})
 
 add_executable(waypoint_extractor nodes/waypoint_extractor/waypoint_extractor.cpp)
 target_link_libraries(waypoint_extractor ${catkin_LIBRARIES})
@@ -129,6 +133,7 @@ install(
     waypoint_loader_show_id
     waypoint_replanner
     waypoint_saver
+    waypoint_saver_scw
     waypoint_clicker
     waypoint_marker_publisher
     waypoint_marker_publisher_show_id
