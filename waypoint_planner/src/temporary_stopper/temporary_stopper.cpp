@@ -35,10 +35,10 @@ private:
 										   size_t fixed_cnt, double fixed_vel, bool reverse_flag, double velocity_limit)
 	{
 	  autoware_msgs::Lane l = lane;
-
+std::cout << "fixed cnt:" << fixed_cnt << "," << start_index << "," << lane.waypoints[start_index].waypoint_param.id << "," << fixed_vel << std::endl;
 	  if (fixed_cnt == 0)
 		return l;
-
+ 
 	  double square_vel = fixed_vel * fixed_vel;
 	  double distance = 0;
 	  for (int i = start_index; i < l.waypoints.size(); ++i)
@@ -108,11 +108,11 @@ private:
 		std_msgs::Int32 dis;
 		dis.data = -1;
 
-		if(way.waypoints.size() == 0 || way.waypoints[0].waypoint_param.id < 5)
+		/*if(way.waypoints.size() == 0 || way.waypoints[0].waypoint_param.id < 5)
 		{
 			pub_temporary_distance_.publish(dis);
 			return -1;
-		}
+		}*/
 
 		for(int i=0; i<way.waypoints.size() || i<config_.search_distance; i++)
 		{
@@ -121,6 +121,11 @@ private:
 			{
 				stop_time_ = way.waypoints[i].waypoint_param.temporary_stop_line;
 				fixed_velocity_ = way.waypoints[i].waypoint_param.temporary_fixed_velocity / 3.6;
+				if(fixed_velocity_ < 0)
+				{
+					pub_temporary_distance_.publish(dis);
+					return -1;
+				}
 
 				visualization_msgs::Marker marker;
 				marker.header.frame_id = "/map";

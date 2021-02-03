@@ -75,6 +75,22 @@ add_dependencies(
 )
 
 add_executable(
+  lane_rule_waypoint
+  nodes/lane_rule/lane_rule_waypoint.cpp
+)
+
+target_link_libraries(
+  lane_rule_waypoint
+  lane_planner
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(
+  lane_rule_waypoint
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_executable(
   lane_rule_lanelet2
   nodes/lane_rule_lanelet2/lane_rule_lanelet2.cpp
 )
@@ -123,6 +139,7 @@ install(
     lane_navi
     lane_planner
     lane_rule
+    lane_rule_waypoint
     lane_rule_lanelet2
     lane_select
     lane_stop
