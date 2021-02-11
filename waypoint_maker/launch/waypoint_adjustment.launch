@@ -1,0 +1,4 @@
+<!-- -->
+<launch>
+	<node pkg="waypoint_maker" type="waypoint_adjustment" name="waypoint_adjustment" output="screen"/>
+</launch>

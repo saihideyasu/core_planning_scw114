@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="waypoint_planner" type="local_waypoint_adjustment" name="local_waypoint_adjustment" output="log">
+  </node>
+</launch>

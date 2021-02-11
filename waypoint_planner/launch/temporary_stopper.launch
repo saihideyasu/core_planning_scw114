@@ -1,5 +1,6 @@
 <launch>
   <node pkg="waypoint_planner" type="temporary_stopper" name="temporary_stopper" output="log">
+    <remap from="/safety_waypoints" to="/position_adjustment_waypoints" />
   </node>
 
   <node pkg="waypoint_planner" type="stopper_distance" name="stopper_distance" output="log">

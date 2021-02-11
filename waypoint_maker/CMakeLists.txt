@@ -127,6 +127,20 @@ add_executable(
 target_link_libraries(straight_line_fix ${catkin_LIBRARIES})
 add_dependencies(straight_line_fix ${catkin_EXPORTED_TARGETS})
 
+add_executable(
+  waypoint_adjustment
+  nodes/waypoint_adjustment/waypoint_adjustment.cpp
+)
+target_link_libraries(waypoint_adjustment ${catkin_LIBRARIES})
+add_dependencies(waypoint_adjustment ${catkin_EXPORTED_TARGETS})
+
+add_executable(
+  travel_route_registration
+  nodes/travel_route_registration/travel_route_registration.cpp
+)
+target_link_libraries(travel_route_registration ${catkin_LIBRARIES})
+add_dependencies(travel_route_registration ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     waypoint_loader
@@ -143,6 +157,8 @@ install(
     waypoint_param_sender
     waypoint_file_move
     straight_line_fix
+    waypoint_adjustment
+    travel_route_registration
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

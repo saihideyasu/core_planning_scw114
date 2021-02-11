@@ -64,6 +64,21 @@ add_dependencies(
   ${catkin_EXPORTED_TARGETS}
 )
 
+add_executable(
+  local_waypoint_adjustment
+  src/local_waypoint_adjustment/local_waypoint_adjustment.cpp
+)
+
+target_link_libraries(
+  local_waypoint_adjustment
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(
+  local_waypoint_adjustment
+  ${catkin_EXPORTED_TARGETS}
+)
+
 add_dependencies(
   astar_avoid
   ${catkin_EXPORTED_TARGETS}
@@ -121,7 +136,7 @@ add_dependencies(
 )
 
 install(
-  TARGETS astar_avoid velocity_set velocity_set_lanelet2 temporary_stopper stopper_distance
+  TARGETS astar_avoid velocity_set velocity_set_lanelet2 temporary_stopper stopper_distance local_waypoint_adjustment
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
