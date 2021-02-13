@@ -32,6 +32,7 @@
 namespace
 {
 ros::Publisher g_local_mark_pub;
+ros::Publisher g_local_history_mark_pub;//steer走行経路
 ros::Publisher g_global_mark_pub;
 
 constexpr int32_t TRAFFIC_LIGHT_RED = 0;
@@ -39,14 +40,17 @@ constexpr int32_t TRAFFIC_LIGHT_GREEN = 1;
 constexpr int32_t TRAFFIC_LIGHT_UNKNOWN = 2;
 
 std_msgs::ColorRGBA _initial_color;
+std_msgs::ColorRGBA _initial_history_color;
 std_msgs::ColorRGBA _global_color;
 std_msgs::ColorRGBA g_local_color;
+std_msgs::ColorRGBA g_local_history_color;//steer走行経路
 const double g_global_alpha = 0.2;
 const double g_local_alpha = 1.0;
 int _closest_waypoint = -1;
 
 visualization_msgs::MarkerArray g_global_marker_array;
 visualization_msgs::MarkerArray g_local_waypoints_marker_array;
+visualization_msgs::MarkerArray g_local_history_waypoints_marker_array;//steer走行経路
 
 bool g_config_manual_detection = true;
 
@@ -325,7 +329,7 @@ void createGlobalLaneArrayOrientationMarker(const autoware_msgs::LaneArray& lane
                                        tmp_marker_array.markers.end());
 }
 
-void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::Lane& lane_waypoint)
+void createLocalPathMarker(std_msgs::ColorRGBA color, std_msgs::ColorRGBA his_color, const autoware_msgs::Lane& lane_waypoint)
 {
   visualization_msgs::Marker lane_waypoint_marker;
   lane_waypoint_marker.header.frame_id = "map";
@@ -345,6 +349,26 @@ void createLocalPathMarker(std_msgs::ColorRGBA color, const autoware_msgs::Lane&
     lane_waypoint_marker.points.push_back(point);
   }
   g_local_waypoints_marker_array.markers.push_back(lane_waypoint_marker);
+
+  //steer走行経路
+  visualization_msgs::Marker lane_history_waypoint_marker;
+  lane_history_waypoint_marker.header.frame_id = "map";
+  lane_history_waypoint_marker.header.stamp = ros::Time::now();
+  lane_history_waypoint_marker.ns = "local_path_marker";
+  lane_history_waypoint_marker.id = 0;
+  lane_history_waypoint_marker.type = visualization_msgs::Marker::LINE_STRIP;
+  lane_history_waypoint_marker.action = visualization_msgs::Marker::ADD;
+  lane_history_waypoint_marker.scale.x = 0.2;
+  lane_history_waypoint_marker.color = his_color;
+  lane_history_waypoint_marker.frame_locked = true;
+
+  for (unsigned int i = 0; i < lane_waypoint.waypoints.size(); i++)
+  {
+    geometry_msgs::Point point;
+    point = lane_waypoint.waypoints[i].waypoint_param.history_pose.position;
+    lane_history_waypoint_marker.points.push_back(point);
+  }
+  g_local_history_waypoints_marker_array.markers.push_back(lane_history_waypoint_marker);
 }
 
 void createLocalPointMarker(const autoware_msgs::Lane& lane_waypoint)
@@ -438,12 +462,15 @@ void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
 void finalCallback(const autoware_msgs::LaneConstPtr& msg)
 {
   g_local_waypoints_marker_array.markers.clear();
+  g_local_history_waypoints_marker_array.markers.clear();
   if (_closest_waypoint != -1)
     createLocalWaypointVelocityMarker(g_local_color, _closest_waypoint, *msg);
-  createLocalPathMarker(g_local_color, *msg);
+  createLocalPathMarker(g_local_color, g_local_history_color, *msg);
   createLocalPointMarker(*msg);
   setLifetime(0.5, &g_local_waypoints_marker_array);
+  setLifetime(0.5, &g_local_history_waypoints_marker_array);
   publishMarkerArray(g_local_waypoints_marker_array, g_local_mark_pub);
+  publishMarkerArray(g_local_history_waypoints_marker_array, g_local_history_mark_pub);
 }
 
 void closestCallback(const std_msgs::Int32ConstPtr& msg)
@@ -474,15 +501,19 @@ int main(int argc, char** argv)
   ros::Subscriber config_sub = nh.subscribe("config/lane_stop", 10, configParameter);
 
   g_local_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("local_waypoints_mark", 10, true);
+  g_local_history_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("local_history_waypoints_mark", 10, true);
   g_global_mark_pub = nh.advertise<visualization_msgs::MarkerArray>("global_waypoints_mark", 10, true);
 
   // initialize path color
   _initial_color.g = 0.7;
   _initial_color.b = 1.0;
+  _initial_history_color.r = 1.0;
   _global_color = _initial_color;
   _global_color.a = g_global_alpha;
   g_local_color = _initial_color;
   g_local_color.a = g_local_alpha;
+  g_local_history_color = _initial_history_color;
+  g_local_history_color.a = g_local_alpha;
 
   ros::spin();
 }

@@ -1,0 +1,12 @@
+<!-- -->
+<launch>
+    <arg name="waypoint_file_name" default="/home/autoware/load_data/okabe/liesse_csv/2021_01_12/go_2021_02_04_after_BBg100.csv" />
+    <arg name="log_file_name" default="/home/autoware/autoware_log/2021_02_12/go_2021_02_04_after_BBg100.csv_2021_2_12_5_36_39.7.csv" />
+    <arg name="output_file_name" default="/tmp/log.csv" />
+
+    <node pkg="waypoint_maker" type="travel_route_registration" name="travel_route_registration" output="screen">
+        <param name="waypoint_file_name" value="$(arg waypoint_file_name)" />
+        <param name="log_file_name" value="$(arg log_file_name)" />
+        <param name="output_file_name" value="$(arg output_file_name)" />
+    </node>
+</launch>

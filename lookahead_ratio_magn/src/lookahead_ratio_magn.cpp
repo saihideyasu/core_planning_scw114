@@ -34,7 +34,7 @@ private:
 	autoware_config_msgs::ConfigLookAheadRatioMagn config_;
 
 	//geometry_msgs::Pose waypose1_, waypose2_;
-	std::vector<geometry_msgs::Pose> waypose_;
+	std::vector<geometry_msgs::Pose> waypose_, history_waypose_;
 	geometry_msgs::TwistStamped current_twist_;
 	geometry_msgs::PoseStamped current_pose_;
 
@@ -46,10 +46,14 @@ private:
 	void callbackWaypoints(const autoware_msgs::Lane &msg)
 	{
 		waypose_.clear();
+		history_waypose_.clear();
 		if(msg.waypoints.size() < 3) return;
 
 		for(int i=0; i<msg.waypoints.size(); i++)
+		{
 			waypose_.push_back(msg.waypoints[i].pose.pose);
+			history_waypose_.push_back(msg.waypoints[i].waypoint_param.history_pose);
+		}
 		//waypose1_ = msg.waypoints[1].pose.pose;
 		//waypose2_ = msg.waypoints[2].pose.pose;
 	}
@@ -60,26 +64,6 @@ private:
 		current_twist_ = *twist_msg;
 		current_pose_ = *pose_msg;
 		std::cout << "cur : " << current_pose_.pose.position.x << "," << current_pose_.pose.position.y << "," << current_pose_.pose.position.z << std::endl;
-	}
-public:
-	LookaheadRatioMagn(ros::NodeHandle nh, ros::NodeHandle p_nh)
-		: nh_(nh)
-		, private_nh_(p_nh)
-	{
-		listener_ = new tf::TransformListener();
-
-		pub_difference_to_waypoint_distance_ = nh_.advertise<autoware_msgs::DifferenceToWaypointDistance>("/difference_to_waypoint_distance", 1);
-		sub_config_= nh_.subscribe("/config/lookahead_ratio_magn", 1, &LookaheadRatioMagn::callbackConfig, this);
-		sub_waypoints_= nh_.subscribe("/final_waypoints", 1, &LookaheadRatioMagn::callbackWaypoints, this);
-		sub_current_pose_ = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, "/current_pose", 10);
-		sub_current_velocity_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, "/current_velocity", 10);
-		sync_twist_pose_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *sub_current_velocity_, *sub_current_pose_);
-		sync_twist_pose_->registerCallback(boost::bind(&LookaheadRatioMagn::TwistPoseCallback, this, _1, _2));
-	}
-	
-	~LookaheadRatioMagn()
-	{
-		delete listener_;
 	}
 
 	double math_distance(geometry_msgs::Pose pose1, geometry_msgs::Pose pose2, geometry_msgs::Pose cur)
@@ -141,6 +125,28 @@ public:
 		return sa_m;
 	}
 
+public:
+	LookaheadRatioMagn(ros::NodeHandle nh, ros::NodeHandle p_nh)
+		: nh_(nh)
+		, private_nh_(p_nh)
+	{
+		listener_ = new tf::TransformListener();
+
+		pub_difference_to_waypoint_distance_ = nh_.advertise<autoware_msgs::DifferenceToWaypointDistance>("/difference_to_waypoint_distance", 1);
+		sub_config_= nh_.subscribe("/config/lookahead_ratio_magn", 1, &LookaheadRatioMagn::callbackConfig, this);
+		sub_waypoints_= nh_.subscribe("/final_waypoints", 1, &LookaheadRatioMagn::callbackWaypoints, this);
+		sub_current_pose_ = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, "/current_pose", 10);
+		sub_current_velocity_ = new message_filters::Subscriber<geometry_msgs::TwistStamped>(nh_, "/current_velocity", 10);
+		sync_twist_pose_ = new message_filters::Synchronizer<TwistPoseSync>(TwistPoseSync(SYNC_FRAMES), *sub_current_velocity_, *sub_current_pose_);
+		sync_twist_pose_->registerCallback(boost::bind(&LookaheadRatioMagn::TwistPoseCallback, this, _1, _2));
+	}
+	
+	~LookaheadRatioMagn()
+	{
+		delete listener_;
+	}
+
+
 	void run()
 	{
 		tf::Vector3 front_baselink_point;
@@ -173,7 +179,10 @@ public:
 			return;
 		}
 
-		double d = math_distance(waypose_[1],  waypose_[2], current_pose_.pose);
+		const geometry_msgs::Pose& way1 = (config_.use_history == false) ? waypose_[1] : history_waypose_[1];
+		const geometry_msgs::Pose& way2 = (config_.use_history == false) ? waypose_[2] : history_waypose_[2];
+
+		double d = math_distance(way1, way2, current_pose_.pose);
 
 		geometry_msgs::Pose front_pose;
 		front_pose.position.x = front_baselink_point.getX();
@@ -183,17 +192,17 @@ public:
 		front_pose.orientation.y = front_baselink_quat.getY();
 		front_pose.orientation.z = front_baselink_quat.getZ();
 		front_pose.orientation.w = front_baselink_quat.getW();
-		double fd = math_distance(waypose_[1],  waypose_[2], front_pose);
+		double fd = math_distance(way1,  way2, front_pose);
 
 		autoware_msgs::DifferenceToWaypointDistance dist;
 		dist.header.stamp = ros::Time::now();
-		tf::Matrix3x3 sa_m = math_angular(waypose_[1], current_pose_.pose);
+		tf::Matrix3x3 sa_m = math_angular(way1, current_pose_.pose);
 		double sa_yaw, sa_roll, sa_pitch;
 		sa_m.getRPY(sa_roll, sa_pitch, sa_yaw);
 		dist.baselink_distance = d;
 		dist.baselink_angular = sa_yaw;
 		dist.front_baselink_distance = fd;
-		tf::Matrix3x3 fsa_m = math_angular(waypose_[1], front_pose);
+		tf::Matrix3x3 fsa_m = math_angular(way1, front_pose);
 		double fsa_yaw, fsa_roll, fsa_pitch;
 		fsa_m.getRPY(fsa_roll, fsa_pitch, fsa_yaw);
 		dist.front_baselink_angular = fsa_yaw;

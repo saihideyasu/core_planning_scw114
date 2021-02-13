@@ -52,6 +52,7 @@ void VelocitySetPath::setTemporalWaypoints(int temporal_waypoints_size, int clos
   // push current pose
   autoware_msgs::Waypoint current_point;
   current_point.pose = control_pose;
+  current_point.waypoint_param.history_pose = control_pose.pose;
   current_point.twist = new_waypoints_.waypoints[closest_waypoint].twist;
   current_point.dtlane = new_waypoints_.waypoints[closest_waypoint].dtlane;
   temporal_waypoints_.waypoints.push_back(current_point);

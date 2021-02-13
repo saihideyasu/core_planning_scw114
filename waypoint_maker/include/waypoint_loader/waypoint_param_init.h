@@ -14,7 +14,16 @@ namespace waypoint_maker
 		wp->pose.pose.position.y = std::stod(map["y"]);
 		wp->pose.pose.position.z = std::stod(map["z"]);
 		wp->pose.pose.orientation = (map.find("yaw") != map.end()) ? tf::createQuaternionMsgFromYaw(std::stod(map["yaw"])) : tf::createQuaternionMsgFromYaw(0);
+		wp->waypoint_param.global_pose.position.x = wp->pose.pose.position.x;
+		wp->waypoint_param.global_pose.position.y = wp->pose.pose.position.y;
+		wp->waypoint_param.global_pose.position.z = wp->pose.pose.position.z;
+		wp->waypoint_param.global_pose.orientation = wp->pose.pose.orientation;
+		wp->waypoint_param.history_pose.position.x = (map.find("history_x") != map.end()) ? std::stod(map["history_x"]) : 0;
+		wp->waypoint_param.history_pose.position.y = (map.find("history_y") != map.end()) ? std::stod(map["history_y"]) : 0;
+		wp->waypoint_param.history_pose.position.z = (map.find("history_z") != map.end()) ? std::stod(map["history_z"]) : 0;
+		wp->waypoint_param.history_pose.orientation = (map.find("history_yaw") != map.end()) ? tf::createQuaternionMsgFromYaw(std::stod(map["history_yaw"])) : tf::createQuaternionMsgFromYaw(0);
 		wp->twist.twist.linear.x = kmph2mps(std::stod(map["velocity"]));
+		wp->waypoint_param.global_twist.linear.x = wp->twist.twist.linear.x;
 		wp->change_flag = std::stoi(map["change_flag"]);
 		wp->wpstate.steering_state = (map.find("steering_flag") != map.end()) ? std::stoi(map["steering_flag"]) : 0;
 		wp->wpstate.accel_state = (map.find("accel_flag") != map.end()) ? std::stoi(map["accel_flag"]) : 0;
