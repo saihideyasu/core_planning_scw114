@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="load_csv" default="true" />
-  <arg name="multi_lane_csv" default="/home/autoware/load_data/sibusawa/2021_02_06/2-kitakouen-odaka/2021_02_18_first_create.csv" />
+  <arg name="multi_lane_csv" default="/home/autoware/load_data/sibusawa/2021_02_06/4-kinenkan-nakanti/saved_waypoints.csv" />
   <arg name="replanning_mode" default="False" />
   <arg name="realtime_tuning_mode" default="False" />
   <arg name="resample_mode" default="True" />
@@ -20,7 +20,14 @@
   <arg name="end_point_offset" default="1" />
   <arg name="use_decision_maker" default="false" />
 
-  <node pkg="rostopic" type="rostopic" name="load_name" args="pub /load_name std_msgs/String 北部運動公園,尾高惇忠生家"/>
+  <!--node pkg="rostopic" type="rostopic" name="load_name" args="pub /load_name std_msgs/String 渋沢栄一記念館,中の家"/-->
+  <node pkg="rostopic" type="rostopic" name="load_name" args="pub /load_name autoware_msgs/WaypointsSerialNumLaunch 
+    '{route_current: '渋沢栄一記念館',
+      route_next: '中の家',
+      toAnext: 5,
+      toAback: 3,
+      toBnext: 0,
+      toBback: 0}'" />
 
   <!-- rosrun waypoint_maker waypoint_loader _multi_lane_csv:="path file" -->
   <node pkg="waypoint_maker" type="waypoint_loader_show_id" name="waypoint_loader_show_id" output="screen" if="$(arg load_csv)">
