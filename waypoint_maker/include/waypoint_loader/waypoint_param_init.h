@@ -15,6 +15,7 @@ namespace waypoint_maker
 		wp->pose.pose.position.z = std::stod(map["z"]);
 		wp->pose.pose.orientation = (map.find("yaw") != map.end()) ? tf::createQuaternionMsgFromYaw(std::stod(map["yaw"])) : tf::createQuaternionMsgFromYaw(0);
 		wp->twist.twist.linear.x = kmph2mps(std::stod(map["velocity"]));
+		wp->waypoint_param.global_twist = wp->twist.twist;
 		wp->change_flag = std::stoi(map["change_flag"]);
 		wp->wpstate.steering_state = (map.find("steering_flag") != map.end()) ? std::stoi(map["steering_flag"]) : 0;
 		wp->wpstate.accel_state = (map.find("accel_flag") != map.end()) ? std::stoi(map["accel_flag"]) : 0;
