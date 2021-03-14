@@ -61,6 +61,10 @@ enum class ChangeFlag : int32_t
 
 typedef std::underlying_type<ChangeFlag>::type ChangeFlagInteger;
 
+void tf_quat_to_rpy(double& roll, double& pitch, double& yaw, tf::Quaternion quat){
+    tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);  //rpy are Pass by Reference
+}
+
 void setLifetime(double sec, visualization_msgs::MarkerArray* marker_array)
 {
   ros::Duration lifetime(sec);
@@ -89,6 +93,51 @@ void publishMarkerArray(const visualization_msgs::MarkerArray& marker_array, con
 }
 
 
+void createAvoidPoint(const autoware_msgs::LaneArray& lane_waypoints_array)
+{
+  visualization_msgs::MarkerArray tmp_marker_array;
+  // display by markers the velocity of each waypoint.
+  visualization_msgs::Marker avoid_marker;
+  avoid_marker.header.frame_id = "map";
+  avoid_marker.header.stamp = ros::Time::now();
+  avoid_marker.type = visualization_msgs::Marker::SPHERE;
+  avoid_marker.action = visualization_msgs::Marker::ADD;
+  avoid_marker.scale.x = 1.0;
+  avoid_marker.scale.y = 1.0;
+  avoid_marker.scale.z = 1.0;
+  avoid_marker.color.r = 0;
+  avoid_marker.color.g = 1;
+  avoid_marker.color.b = 0;
+  avoid_marker.color.a = 1.0;
+  avoid_marker.frame_locked = true;
+
+  for (autoware_msgs::Lane lane : lane_waypoints_array.lanes)
+  {
+    for(autoware_msgs::Waypoint way : lane.waypoints)
+    {
+      autoware_msgs::WaypointParam &param = way.waypoint_param;
+      if(param.avoid_adjustment_magn != 0)
+      {
+        geometry_msgs::Point &way_point = way.pose.pose.position;
+        geometry_msgs::Quaternion &way_qua = way.pose.pose.orientation;
+
+        tf::Quaternion plus_pose = tf::Quaternion(0, param.avoid_adjustment_magn, 0, 0);
+        tf::Quaternion tf_way_qua = tf::Quaternion(way_qua.x, way_qua.y, way_qua.z, way_qua.w);
+        tf::Quaternion plus_pose_rot = tf_way_qua * plus_pose * tf_way_qua.inverse();
+
+        avoid_marker.pose.position.x = way_point.x + plus_pose_rot.x();
+        avoid_marker.pose.position.y = way_point.y + plus_pose_rot.y();
+        avoid_marker.pose.position.z = way_point.z + plus_pose_rot.z();
+        avoid_marker.pose.orientation = way_qua;
+
+        tmp_marker_array.markers.push_back(avoid_marker);
+      }
+    }
+  }
+
+  g_global_marker_array.markers.insert(g_global_marker_array.markers.end(), tmp_marker_array.markers.begin(),
+                                       tmp_marker_array.markers.end());
+}
 
 void createGlobalLaneArrayVelocityMarker(const autoware_msgs::LaneArray& lane_waypoints_array)
 {
@@ -432,6 +481,7 @@ void laneArrayCallback(const autoware_msgs::LaneArrayConstPtr& msg)
   createGlobalLaneArrayVelocityMarker(*msg);
   createGlobalLaneArrayOrientationMarker(*msg);
   createGlobalLaneArrayChangeFlagMarker(*msg);
+  createAvoidPoint(*msg);
   publishMarkerArray(g_global_marker_array, g_global_mark_pub);
 }
 

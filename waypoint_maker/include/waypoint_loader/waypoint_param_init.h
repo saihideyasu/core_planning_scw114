@@ -82,6 +82,7 @@ namespace waypoint_maker
 		wp->waypoint_param.obstacle_deceleration = ((map.find("obstacle_deceleration") != map.end()) ? std::stod(map["obstacle_deceleration"]) : -1);
 		wp->waypoint_param.lane_rule_deceleration = ((map.find("lane_rule_deceleration") != map.end()) ? std::stod(map["lane_rule_deceleration"]) : -1);
 		wp->waypoint_param.position_adjustment_magn = ((map.find("position_adjustment_magn") != map.end()) ? std::stod(map["position_adjustment_magn"]) : 0);
+		wp->waypoint_param.avoid_adjustment_magn = ((map.find("avoid_adjustment_magn") != map.end()) ? std::stod(map["avoid_adjustment_magn"]) : 0);
 		wp->waypoint_param.intersection_id = ((map.find("intersection_id") != map.end()) ? std::stoi(map["intersection_id"]) : -1);
 		wp->waypoint_param.routes_id = ((map.find("routes_id") != map.end()) ? std::stoi(map["routes_id"]) : -1);
 		wp->waypoint_param.blue_arrow_flag = ((map.find("blue_arrow_flag") != map.end()) ? std::stoi(map["blue_arrow_flag"]) : 0);
