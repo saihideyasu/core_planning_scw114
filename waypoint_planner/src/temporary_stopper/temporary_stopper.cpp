@@ -206,7 +206,7 @@ std::cout << "fixed cnt:" << fixed_cnt << "," << start_index << "," << lane.wayp
 				stop_waypoint_id_ = 0;
 				//if(can_.velocity_actual <= config_.stop_speed_threshold)   //幅を持たせなくてよいか？
 				if(current_velocity_.twist.linear.x <= config_.stop_speed_threshold
-						&& distance_.distance <= 0.5 && distance_.distance >=0
+						&& distance_.distance <= 3 && distance_.distance >=0
 						&& distance_.send_process == autoware_msgs::StopperDistance::TEMPORARY_STOPPER)
 				{
 					stop_waypoint_id_ = lane.waypoints[stop_index].waypoint_param.id;

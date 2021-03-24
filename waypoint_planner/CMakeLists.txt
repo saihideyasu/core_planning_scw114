@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_planner)
 
-set(CMAKE_CXX_FLAGS "-O2 -g -Wall ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-O2 -g -Wall -fpermissive ${CMAKE_CXX_FLAGS}")
 
 find_package(autoware_build_flags REQUIRED)
 
@@ -35,7 +35,7 @@ include_directories(
 
 add_executable(
   astar_avoid
-  src/astar_avoid/astar_avoid.cpp
+  src/astar_avoid/astar_avoid_saiko.cpp
   src/astar_avoid/astar_avoid_node.cpp
 )
 
@@ -100,6 +100,21 @@ add_dependencies(
 )
 
 add_executable(
+  clothoid_avoidance
+  src/clothoid_avoidance/clothoid_avoidance.cpp
+)
+
+target_link_libraries(
+  clothoid_avoidance
+  ${catkin_LIBRARIES}
+)
+
+add_dependencies(
+  clothoid_avoidance
+  ${catkin_EXPORTED_TARGETS}
+)
+
+add_executable(
   velocity_set
   src/velocity_set/velocity_set.cpp
   src/velocity_set/velocity_set_path.cpp
@@ -136,7 +151,7 @@ add_dependencies(
 )
 
 install(
-  TARGETS astar_avoid velocity_set velocity_set_lanelet2 temporary_stopper stopper_distance local_waypoint_adjustment
+  TARGETS astar_avoid velocity_set velocity_set_lanelet2 temporary_stopper stopper_distance local_waypoint_adjustment clothoid_avoidance
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

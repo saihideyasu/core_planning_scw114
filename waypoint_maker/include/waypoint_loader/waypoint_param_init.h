@@ -40,7 +40,7 @@ namespace waypoint_maker
 		wp->waypoint_param.vgf_leafsize = (map.find("vgf_leafsize") != map.end()) ? std::stof(map["vgf_leafsize"]) : -1;
 		wp->waypoint_param.vgf_measurement_range = (map.find("vgf_measurement_range") != map.end()) ? std::stof(map["vgf_measurement_range"]) : -1;
 		wp->waypoint_param.automatic_door = (char)((map.find("automatic_door") != map.end()) ? std::stoi(map["automatic_door"]) : 0);
-		wp->waypoint_param.signal_stop_line = (char)((map.find("signal_stop_line") != map.end()) ? std::stoi(map["signal_stop_line"]) : 0);
+		wp->waypoint_param.signal_stop_line = ((map.find("signal_stop_line") != map.end()) ? std::stoi(map["signal_stop_line"]) : 0);
 		wp->waypoint_param.temporary_stop_line = ((map.find("temporary_stop_line") != map.end()) ? std::stod(map["temporary_stop_line"]) : 0);
 		wp->waypoint_param.temporary_fixed_velocity = ((map.find("temporary_fixed_velocity") != map.end()) ? std::stod(map["temporary_fixed_velocity"]) : 0);
 		wp->waypoint_param.period_signal_time_first = ((map.find("period_signal_time_first") != map.end()) ? map["period_signal_time_first"] : "");
@@ -97,6 +97,7 @@ namespace waypoint_maker
 		wp->waypoint_param.steer_override = ((map.find("steer_override") != map.end()) ? std::stod(map["steer_override"]) : -100000);
 		wp->waypoint_param.mpc_target_input = ((map.find("mpc_target_input") != map.end()) ? std::stoi(map["mpc_target_input"]) : 0);
 		wp->waypoint_param.cmd_select = ((map.find("cmd_select") != map.end()) ? std::stoi(map["cmd_select"]) : 0);
+		wp->waypoint_param.avoid_adjustment_magn = ((map.find("avoid_adjustment_magn") != map.end()) ? std::stod(map["avoid_adjustment_magn"]) : 0);
 	}
 
 	void waypoint_param_init(autoware_msgs::Waypoint *wp, const unsigned int id_counter)

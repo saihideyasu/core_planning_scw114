@@ -124,21 +124,44 @@ void VelocitySetPath::avoidSuddenAcceleration(double deceleration, int closest_w
   return;
 }
 
-void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint)
+void VelocitySetPath::avoidSuddenDeceleration(double velocity_change_limit, double deceleration, int closest_waypoint, ros::Publisher& vc_pub)
 {
   if (closest_waypoint < 0)
     return;
-
+  static int count = 0;
+  count++;
   const double& closest_vel = new_waypoints_.waypoints[closest_waypoint].twist.twist.linear.x;
 
   // if accelerating, do not modify the speed profile.
   if ((current_vel_ >= 0.0 && current_vel_ <= closest_vel) || (current_vel_ < 0.0 && current_vel_ > closest_vel))
+  {
+    std::stringstream ss;
+    ss << count << ",velocity1";
+    std_msgs::String str;
+    str.data = ss.str();
+    vc_pub.publish(str);
     return;
+  }
 
   // not avoid braking
   if (std::abs(current_vel_ - closest_vel) < velocity_change_limit)
+  {
+    std::stringstream ss;
+    ss << count << ",temporary";
+    std_msgs::String str;
+    str.data = ss.str();
+    vc_pub.publish(str);
     return;
-
+  }
+  else
+  {
+    std::stringstream ss;
+    ss << count << ",velocity2";
+    std_msgs::String str;
+    str.data = ss.str();
+    vc_pub.publish(str);
+  }
+  
   //std::cout << "avoid sudden braking!" << std::endl;
   for (int i = 0;; i++)
   {

@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="waypoint_planner" type="clothoid_avoidance" name="clothoid_avoidance" output="log">
+  </node>
+</launch>
