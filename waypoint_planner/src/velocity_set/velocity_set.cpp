@@ -18,6 +18,7 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
 #include <iostream>
+#include <std_msgs/String.h>
 
 #include <waypoint_planner/velocity_set/libvelocity_set.h>
 #include <waypoint_planner/velocity_set/velocity_set_info.h>
@@ -481,7 +482,7 @@ EControl obstacleDetection(int closest_waypoint, const autoware_msgs::Lane& lane
 }
 
 void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_result, int closest_waypoint,
-                     int obstacle_waypoint, const ros::Publisher& final_waypoints_pub, VelocitySetPath* vs_path)
+                     int obstacle_waypoint, const ros::Publisher& final_waypoints_pub, VelocitySetPath* vs_path, ros::Publisher& vc_pub)
 {
   if (detection_result == EControl::STOP || detection_result == EControl::STOPLINE)
   {  // STOP for obstacle/stopline
@@ -495,7 +496,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
     // change waypoints to stop by the stop_waypoint
     vs_path->changeWaypointsForStopping(stop_waypoint, obstacle_waypoint, closest_waypoint, deceleration);
     vs_path->avoidSuddenAcceleration(deceleration, closest_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), deceleration, closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), deceleration, closest_waypoint, vc_pub);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
@@ -503,7 +504,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
   {  // DECELERATE for obstacles
     vs_path->initializeNewWaypoints();
     vs_path->changeWaypointsForDeceleration(vs_info.getDecelerationObstacle(), closest_waypoint, obstacle_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint, vc_pub);
     vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
@@ -512,7 +513,7 @@ void changeWaypoints(const VelocitySetInfo& vs_info, const EControl& detection_r
   {  // ACCELERATE or KEEP
     vs_path->initializeNewWaypoints();
     vs_path->avoidSuddenAcceleration(vs_info.getDecelerationObstacle(), closest_waypoint);
-    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint);
+    vs_path->avoidSuddenDeceleration(vs_info.getVelocityChangeLimit(), vs_info.getDecelerationObstacle(), closest_waypoint, vc_pub);
     vs_path->setTemporalWaypoints(vs_info.getTemporalWaypointsSize(), closest_waypoint, vs_info.getControlPose());
     final_waypoints_pub.publish(vs_path->getTemporalWaypoints());
   }
@@ -567,6 +568,7 @@ int main(int argc, char** argv)
   ros::Publisher obstacle_pub = nh.advertise<visualization_msgs::Marker>("obstacle", 1);
   ros::Publisher obstacle_waypoint_pub = nh.advertise<std_msgs::Int32>("obstacle_waypoint", 1, true);
   ros::Publisher stopline_waypoint_pub = nh.advertise<std_msgs::Int32>("stopline_waypoint", 1, true);
+  ros::Publisher velocity_change_pub = nh.advertise<std_msgs::String>("/vs/velocity_change", 1, true);
 
   ros::Publisher final_waypoints_pub;
   final_waypoints_pub = nh.advertise<autoware_msgs::Lane>("final_waypoints", 1, true);
@@ -598,7 +600,7 @@ int main(int argc, char** argv)
                                                   detection_range_pub, obstacle_pub, &obstacle_waypoint);
 
     changeWaypoints(vs_info, detection_result, closest_waypoint,
-                    obstacle_waypoint, final_waypoints_pub, &vs_path);
+                    obstacle_waypoint, final_waypoints_pub, &vs_path, velocity_change_pub);
 
     vs_info.clearPoints();
 

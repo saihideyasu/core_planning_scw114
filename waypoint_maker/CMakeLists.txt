@@ -18,6 +18,7 @@ find_package(
     tablet_socket_msgs
     tf
     vector_map
+    pcl_ros
 )
 
 include_directories("/usr/include/eigen3")
@@ -62,7 +63,7 @@ add_executable(waypoint_saver nodes/waypoint_saver/waypoint_saver.cpp)
 target_link_libraries(waypoint_saver ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver ${catkin_EXPORTED_TARGETS})
 
-add_executable(waypoint_saver_scw nodes/waypoint_saver/waypoint_saver_scw.cpp)
+add_executable(waypoint_saver_scw nodes/waypoint_saver/waypoint_saver_rtk_plus.cpp)
 target_link_libraries(waypoint_saver_scw ${catkin_LIBRARIES})
 add_dependencies(waypoint_saver_scw ${catkin_EXPORTED_TARGETS})
 
@@ -141,6 +142,13 @@ add_executable(
 target_link_libraries(travel_route_registration ${catkin_LIBRARIES})
 add_dependencies(travel_route_registration ${catkin_EXPORTED_TARGETS})
 
+add_executable(
+  map_normalizer
+  nodes/map_normalizer/map_normalizer.cpp
+)
+target_link_libraries(map_normalizer ${catkin_LIBRARIES})
+add_dependencies(map_normalizer ${catkin_EXPORTED_TARGETS})
+
 install(
   TARGETS
     waypoint_loader
@@ -159,6 +167,7 @@ install(
     straight_line_fix
     waypoint_adjustment
     travel_route_registration
+    map_normalizer
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

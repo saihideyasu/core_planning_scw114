@@ -135,6 +135,21 @@ add_dependencies(
   ${catkin_EXPORTED_TARGETS}
 )
 
+#add_executable(
+#  clothoid_avoidance
+#  src/clothoid_avoidance/clothoid_avoidance.cpp
+#)
+
+#target_link_libraries(
+#  clothoid_avoidance
+#  ${catkin_LIBRARIES}
+#)
+
+#add_dependencies(
+#  clothoid_avoidance
+#  ${catkin_EXPORTED_TARGETS}
+#)
+
 install(
   TARGETS astar_avoid velocity_set velocity_set_lanelet2 temporary_stopper stopper_distance local_waypoint_adjustment
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
