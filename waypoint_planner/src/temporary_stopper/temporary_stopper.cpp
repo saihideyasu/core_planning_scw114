@@ -201,25 +201,40 @@ std::cout << "fixed cnt:" << fixed_cnt << "," << start_index << "," << lane.wayp
 				pub_temporari_flag_.publish(flag);
 				return lane;//停止判定終了
 			}
-			else
+			
+			stop_waypoint_id_ = 0;
+			//if(can_.velocity_actual <= config_.stop_speed_threshold)   //幅を持たせなくてよいか？
+			if(distance_.send_process == autoware_msgs::StopperDistance::TEMPORARY_STOPPER)//停止線の種類が一時停止線か
 			{
-				stop_waypoint_id_ = 0;
-				//if(can_.velocity_actual <= config_.stop_speed_threshold)   //幅を持たせなくてよいか？
-				if(current_velocity_.twist.linear.x <= config_.stop_speed_threshold
-						&& distance_.distance <= 0.5 && distance_.distance >=0
-						&& distance_.send_process == autoware_msgs::StopperDistance::TEMPORARY_STOPPER)
+				if(distance_.distance <= 10 && distance_.distance >=0)//停止線までの距離判定
 				{
-					stop_waypoint_id_ = lane.waypoints[stop_index].waypoint_param.id;
-					//timer_ = ros::Time(now_time.sec + (int)stop_time_, now_time.nsec);
-					ros::Duration ros_stop_time(stop_time_);
-					if(can503_.clutch == true) timer_ = now_time + ros_stop_time;
-					else timer_ = ros::Time(0);//手動運転の場合はTimer処理はしない
-					//std::cout << "distance_0 : " << distance_ << std::endl;
-					std::cout << "time : " << timer_.sec << "," << now_time.sec << std::endl;
+					if(current_velocity_.twist.linear.x <= config_.stop_speed_threshold || can503_.clutch == false)//スピードの0判定
+					{
+						stop_waypoint_id_ = lane.waypoints[stop_index].waypoint_param.id;
+						ros::Duration ros_stop_time(stop_time_);
+						timer_ = now_time + ros_stop_time;
+						std::cout << "time : " << timer_.sec << "," << now_time.sec << std::endl;
+					}
+					if(can503_.clutch == false)
+					{
+						timer_ = ros::Time(0);//手動運転の場合はTimer処理はしない
+					}
 				}
-				flag.data = 1;//停止判定あり
-				pub_temporari_flag_.publish(flag);
 			}
+			/*if(current_velocity_.twist.linear.x <= config_.stop_speed_threshold
+					&& distance_.distance <= 0.5 && distance_.distance >=0
+					&& distance_.send_process == autoware_msgs::StopperDistance::TEMPORARY_STOPPER)
+			{
+				stop_waypoint_id_ = lane.waypoints[stop_index].waypoint_param.id;
+				//timer_ = ros::Time(now_time.sec + (int)stop_time_, now_time.nsec);
+				ros::Duration ros_stop_time(stop_time_);
+				if(can503_.clutch == true) timer_ = now_time + ros_stop_time;
+				else timer_ = ros::Time(0);//手動運転の場合はTimer処理はしない
+				//std::cout << "distance_0 : " << distance_ << std::endl;
+				std::cout << "time : " << timer_.sec << "," << now_time.sec << std::endl;
+			}*/
+			flag.data = 1;//停止判定あり
+			pub_temporari_flag_.publish(flag);
 		}
 		//else if(can503_read_ == true && can503_.clutch == false) timer_ = ros::Time(0);//停止状態でクラッチが切れている（手動）場合、停止処理を強制終了
 
